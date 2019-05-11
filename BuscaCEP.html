@@ -1,0 +1,132 @@
+<html>
+
+<head>
+    <title>Bonobo</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+</head>
+
+<body>
+    <div class="row container">
+        <div class="card" style="margin-top:11%;margin-left: 45%;">
+            <div class="card-body">
+
+                <h1 class="card-title">Buscar CEP</h1>
+                <div class="col-sm-12">
+                    <img src="img/bonobo-logo.png">
+                    <div class="form-inline" style="margin-top:5%">
+                        <div class="form-group mb-2">
+                            <label for="cep" class="sr-only">CEP</label>
+                            <input type="text" class="form-control" id="cep" placeholder="CEP">
+                        </div>
+                        <button type="submit" class="btn btn-primary mb-2" id="buscar">Buscar CEP</button>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item" name="rua" id="rua" size="60">Rua:</li>
+                        <li class="list-group-item" name="bairro" id="bairro" size="40">Bairro:</li>
+                        <li class="list-group-item" name="cidade" id="cidade" size="40">Cidade:</li>
+                        <li class="list-group-item" name="uf" id="uf" size="2">Estado:</li>
+                        <li class="list-group-item" name="ibge" type="text" id="ibge" size="8">IBGE:</li>
+                    </ul>
+                    <label id="msg"></label><br />
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Adicionando JQuery -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="js/jquery-1.2.6.pack.js"></script>
+    <script type="text/javascript" src="js/jquery.maskedinput-1.1.4.pack.js"></script>
+    <!-- Adicionando Javascript -->
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            $("#cep").mask("99999-999");
+            function limpa_formulário_cep() {
+                // Limpa valores do formulário de cep.
+                $("#rua").text("");
+                $("#bairro").text("");
+                $("#cidade").text("");
+                $("#uf").text("");
+                $("#ibge").text("");
+            }
+
+            //Quando o botão for clicado.
+            $("#buscar").click(function () {
+
+                //Nova variável "cep" somente com dígitos.
+                var cep = $("#cep").val().replace(/[^\d]+/g, '');
+
+                //Verifica se campo cep possui valor informado.
+                if (cep != "") {
+
+                    //Expressão regular para validar o CEP.
+                    var validacep = /^[0-9]{8}$/;
+
+                    //Valida o formato do CEP.
+                    if (validacep.test(cep)) {
+
+                        //Preenche os campos com "..." enquanto consulta webservice.
+                        $("#rua").text("...");
+                        $("#bairro").text("...");
+                        $("#cidade").text("...");
+                        $("#uf").text("...");
+                        $("#ibge").text("...");
+                        $("#msg").removeClass("alert-danger");
+                        $("#msg").addClass("alert alert-primary");
+                        $("#msg").text("Aguarde...");
+
+
+                        //Consulta o webservice viacep.com.br/
+                        $.getJSON("https://viacep.com.br/ws/" + cep + "/json/?callback=?", function (dados) {
+
+                            if (!("erro" in dados)) {
+                                //Atualiza os campos com os valores da consulta.
+                                $("#rua").text("Rua: " + dados.logradouro);
+                                $("#bairro").text("Bairro: " + dados.bairro);
+                                $("#cidade").text("Cidade: " + dados.localidade);
+                                $("#uf").text("UF: " + dados.uf);
+                                $("#ibge").text("IBGE: " + dados.ibge);
+                                $("#msg").removeClass("alert alert-primary");
+                                $("#msg").text("");
+                            } //end if.
+                            else {
+                                //CEP pesquisado não foi encontrado.
+                                limpa_formulário_cep();
+                                $("#msg").text("CEP não encontrado.");
+                                $("#msg").addClass("alert alert-danger");
+                            }
+                        });
+                    } //end if.
+                    else {
+                        //cep é inválido.
+                        limpa_formulário_cep();
+                        $("#msg").text("Formato de CEP inválido.");
+                        $("#msg").addClass("alert alert-danger");
+                    }
+                } //end if.
+                else {
+                    //cep sem valor, limpa formulário.
+                    limpa_formulário_cep();
+                    $("#msg").text("Preencha o campo CEP.");
+                    $("#msg").addClass("alert alert-danger");
+                }
+            });
+        });
+
+    </script>
+
+</body>
+
+</html>
